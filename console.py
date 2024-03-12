@@ -153,7 +153,7 @@ class HBNBCommand(cmd.Cmd):
     def do_all(self, line):
         """Shows all instances, or instances of a certain class
 
-        Args: 
+        Args:
             line(args): enter with command (optional): <class name>
             Example: 'all' OR 'all User'
 
@@ -166,7 +166,7 @@ class HBNBCommand(cmd.Cmd):
         if (self.my_errors(line, 1) == 1):
             return
         print([str(v) for v in d.values()
-               if v.__class__.__name__ == args[0]])
+            if v.__class__.__name__ == args[0]])
 
     def do_update(self, line):
         """Updates an instance based on the class name
@@ -182,33 +182,28 @@ class HBNBCommand(cmd.Cmd):
             return
         args = line.split()
         d = storage.all()
+        for i in range(len(args[1:]) + 1):
+            if args[i][0] == '"':
+                args[i] = args[i].replace('"', "")
         key = args[0] + '.' + args[1]
-        if key not in d:
-            print("** no instance found **")
-            return
-
-        instance = d[key]
-        attr_name = args[2]
-        attr_value = args[3].strip('"')
-
-        # Get the type of the attribute from the class definition
-        attr_type = type(getattr(instance, attr_name, None))
-        if attr_type is None:
-            print("** attribute doesn't exist **")
-            return
-
+        attr_k = args[2]
+        attr_v = args[3]
         try:
-            # Convert the attribute value to the correct type
-            attr_value = attr_type(attr_value)
-        except (TypeError, ValueError):
-            print("** invalid value type **")
-            return
-
-        # Set the attribute value and save the instance
-        setattr(instance, attr_name, attr_value)
-        instance.save()
-
-
+            if attr_v.isdigit():
+                attr_v = int(attr_v)
+            elif float(attr_v):
+                attr_v = float(attr_v)
+        except ValueError:
+            pass
+        class_attr = type(d[key]).__dict__
+        if attr_k in class_attr.keys():
+            try:
+                attr_v = type(class_attr[attr_k])(attr_v)
+            except Exception:
+                print("Entered wrong value type")
+                return
+        setattr(d[key], attr_k, attr_v)
+        storage.save()
 
     def my_count(self, class_n):
         """
@@ -220,7 +215,7 @@ class HBNBCommand(cmd.Cmd):
                 count_instance += 1
         print(count_instance)
 
-    def defo(self, line):
+    def default(self, line):
         """Method for commands:
         <class name>.all()
         <class name>.count()
