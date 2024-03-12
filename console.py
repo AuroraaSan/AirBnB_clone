@@ -229,7 +229,7 @@ class HBNBCommand(cmd.Cmd):
 
         """
         names = ["BaseModel", "User", "State", "City", "Amenity",
-                 "Place", "Review"]
+                "Place", "Review"]
 
         commands = {"all": self.do_all,
                     "count": self.my_count,
@@ -243,7 +243,7 @@ class HBNBCommand(cmd.Cmd):
         if not args or len(args) < 2 or args[0] not in names \
                 or args[1] not in commands.keys():
             super().default(line)
-        return
+            return
 
         if args[1] in ["all", "count"]:
             commands[args[1]](args[0])
@@ -255,11 +255,14 @@ class HBNBCommand(cmd.Cmd):
                 dic_p = eval(params.groups()[1])
                 for k, v in dic_p.items():
                     commands[args[1]](args[0] + " " + params.groups()[0] +
-                                      " " + k + " " + str(v))
+                                    " " + k + " " + str(v))
             else:
                 rest = params.groups()[1].split(", ")
                 commands[args[1]](args[0] + " " + params.groups()[0] + " " +
-                                  rest[0] + " " + rest[1])
+                                rest[0] + " " + rest[1])
+        else:
+            super().default(line)
+
 
 
 if __name__ == '__main__':
