@@ -1,8 +1,3 @@
-#!/usr/bin/python3
-"""
-console that contains entry point of cmd interpreter.
-"""
-
 import cmd
 import json
 import models

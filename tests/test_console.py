@@ -94,5 +94,11 @@ class TestConsole(unittest.TestCase):
             output = f.getvalue().strip()
             self.assertEqual(output, "")
 
+    def test_help_show(self):
+        with patch('sys.stdout', new=StringIO()) as f:
+            HBNBCommand().onecmd("help show")
+            output = f.getvalue().strip()
+            self.assertTrue("Show command help message" in output)  # Replace with the actual expected output
+
 if __name__ == '__main__':
     unittest.main()
