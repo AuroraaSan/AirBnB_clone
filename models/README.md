@@ -1,0 +1,1 @@
+Readme file for models dicrectory for airbnb console 
