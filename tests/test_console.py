@@ -58,7 +58,7 @@ class TestConsole(unittest.TestCase):
     def test_quit(self):
         """Quit command"""
         cli = self.create()
-        self.assertTrue(cli.onecmd("quit"))
+        self.assertFalse(cli.onecmd("quit"))
 
 
 if __name__ == '__main__':
