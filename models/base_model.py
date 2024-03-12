@@ -1,72 +1,67 @@
 #!/usr/bin/python3
-"""
-base class for the airbnb project
-"""
+"""This module defines a base class for all models in our hbnb clone"""
+import os
+import uuid
 from datetime import datetime
-from uuid import uuid4
-import models
+from sqlalchemy import Column, String, DATETIME
+from sqlalchemy.ext.declarative import declarative_base
+
+
+Base = declarative_base()
+
 
 class BaseModel:
-    """Custom base for classes in AirBnB project
-
-    Arttributes:
-        id(str): user id.
-        created_at: to assign current datetime.
-        updated_at: to update current datetime.
-    Methods:
-        __str__: prnt the classname -id - creates dict representations of the input val.
-        save(self): update current datetime.
-        to_dict(self): returns the dict values for instance object.
-
-    """
+    """A base class for all hbnb models"""
+    id = Column(String(60), nullable=False, primary_key=True, unique=True)
+    created_at = Column(DATETIME, nullable=False, default=datetime.utcnow())
+    updated_at = Column(DATETIME, nullable=False, default=datetime.utcnow())
 
     def __init__(self, *args, **kwargs):
-        """Public instance artributes initialization after creation
-
-        Args:
-            *args(args): args
-            **kwargs(dict): attribute val
-
-        """
-        DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
+        """Instantiates a new model"""
         if not kwargs:
-            self.id = str(uuid4())
-            self.created_at = datetime.utcnow()
-            self.updated_at = datetime.utcnow()
-            models.storage.new(self)
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
         else:
             for key, value in kwargs.items():
-                if key in ("updated_at", "created_at"):
-                    self.__dict__[key] = datetime.strptime(
-                        value, DATE_TIME_FORMAT)
-                elif key[0] == "id":
-                    self.__dict__[key] = str(value)
-                else:
-                    self.__dict__[key] = value
+                if key != '__class__':
+                    if key in ('created_at', 'updated_at'):
+                        setattr(self, key, datetime.fromisoformat(value))
+                    else:
+                        setattr(self, key, value)
+            # if os.getenv('HBNB_TYPE_STORAGE') in ('db'):
+            if not hasattr(kwargs, 'id'):
+                setattr(self, 'id', str(uuid.uuid4()))
+            if not hasattr(kwargs, 'created_at'):
+                setattr(self, 'created_at', datetime.now())
+            if not hasattr(kwargs, 'updated_at'):
+                setattr(self, 'updated_at', datetime.now())
 
     def __str__(self):
-        """
-        Return string representation of class
-        """
-        return "[{}] ({}) {}".format(self.__class__.__name__,
-                                     self.id, self.__dict__)
+        """Returns a string representation of the instance"""
+        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
+        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
+
+    def delete(self):
+        """Deletes this BaseModel instance from the storage"""
+        from models import storage
+        storage.delete(self)
 
     def save(self):
-        """
-        Updates the public instance attribute
-        """
-        self.updated_at = datetime.utcnow()
-        models.storage.save()
+        """Updates updated_at with current time when instance is changed"""
+        from models import storage
+        self.updated_at = datetime.now()
+        storage.new(self)
+        storage.save()
 
     def to_dict(self):
-        """
-        Method returns a dictionary containing all 
-        """
-        map_objects = {}
+        """Convert instance into dict format"""
+        res = {}
         for key, value in self.__dict__.items():
-            if key == "created_at" or key == "updated_at":
-                map_objects[key] = value.isoformat()
-            else:
-                map_objects[key] = value
-        map_objects["__class__"] = self.__class__.__name__
-        return map_objects
+            if key != '_sa_instance_state':
+                if isinstance(value, datetime):
+                    res[key] = value.isoformat()
+                else:
+                    res[key] = value
+        res['__class__'] = self.__class__.__name__
+        return res
