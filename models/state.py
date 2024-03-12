@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 """
-Amenity class
+State class
 """
 from models.base_model import BaseModel
 
-class Amenity(BaseModel):
-    """Custom amenity class
+class State(BaseModel):
+    """Represent a state
 
     Attributes:
-        name(str): amenity name
+        name (str): state name.
 
     """
     name = ""
