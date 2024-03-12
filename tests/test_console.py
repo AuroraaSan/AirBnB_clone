@@ -60,6 +60,39 @@ class TestConsole(unittest.TestCase):
         cli = self.create()
         self.assertFalse(cli.onecmd("quit"))
 
+    def test_help(self):
+        with patch('sys.stdout', new=StringIO()) as f:
+            self.cli.onecmd("help")
+            output = f.getvalue().strip()
+            self.assertTrue("Documented commands (type help <topic>):" in output)
+
+    def test_create(self):
+        with patch('sys.stdout', new=StringIO()) as f:
+            self.cli.onecmd("create BaseModel")
+            output = f.getvalue().strip()
+            self.assertTrue(len(output) == 36)  # UUID length
+
+    def test_show(self):
+        with patch('sys.stdout', new=StringIO()) as f:
+            self.cli.onecmd("create BaseModel")
+            output = f.getvalue().strip()
+            obj_id = output
+
+        with patch('sys.stdout', new=StringIO()) as f:
+            self.cli.onecmd(f"show BaseModel {obj_id}")
+            output = f.getvalue().strip()
+            self.assertTrue("BaseModel" in output)
+
+    def test_destroy(self):
+        with patch('sys.stdout', new=StringIO()) as f:
+            self.cli.onecmd("create BaseModel")
+            output = f.getvalue().strip()
+            obj_id = output
+
+        with patch('sys.stdout', new=StringIO()) as f:
+            self.cli.onecmd(f"destroy BaseModel {obj_id}")
+            output = f.getvalue().strip()
+            self.assertEqual(output, "")
 
 if __name__ == '__main__':
     unittest.main()
