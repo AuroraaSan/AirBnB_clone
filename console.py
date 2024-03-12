@@ -203,7 +203,8 @@ class HBNBCommand(cmd.Cmd):
                 print("Entered wrong value type")
                 return
         setattr(d[key], attr_k, attr_v)
-        storage.save()
+        d[key].save()
+
 
     def my_count(self, class_n):
         """
