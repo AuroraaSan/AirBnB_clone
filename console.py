@@ -91,7 +91,7 @@ class HBNBCommand(cmd.Cmd):
         """
         return True
 
-    def d_EOF(self, line):
+    def do_EOF(self, line):
         """Quit cmd interpreter with keyboard
 
          Args:
@@ -100,7 +100,7 @@ class HBNBCommand(cmd.Cmd):
         """
         return True
 
-    def d_create(self, line):
+    def do_create(self, line):
         """Creates a new instance of (cls_name) class and prints the new instance's id.
 
         Args:
@@ -120,7 +120,7 @@ class HBNBCommand(cmd.Cmd):
 
         print(obj.id)
 
-    def d_shw(self, line):
+    def do_show(self, line):
         """Prints a string representation of an instance.
 
         Args:
@@ -137,7 +137,7 @@ class HBNBCommand(cmd.Cmd):
         key = args[0] + '.' + args[1]
         print(d[key])
 
-    def d_dest(self, line):
+    def do_destroy(self, line):
         """Deletes an instance of a certain class.
 
         Args:
@@ -155,7 +155,7 @@ class HBNBCommand(cmd.Cmd):
         del d[key]
         storage.save()
 
-    def do_x(self, line):
+    def do_all(self, line):
         """Shows all instances, or instances of a certain class
 
         Args: 
@@ -173,7 +173,7 @@ class HBNBCommand(cmd.Cmd):
         print([str(v) for v in d.values()
                if v.__class__.__name__ == args[0]])
 
-    def d_updat(self, line):
+    def do_update(self, line):
         """Updates an instance based on the class name
         and id by adding or updating an attribute
 
@@ -210,7 +210,7 @@ class HBNBCommand(cmd.Cmd):
         setattr(d[key], attr_k, attr_v)
         storage.save()
 
-    def m_count(self, class_n):
+    def my_count(self, class_n):
         """
         Method counts instances of a certain class
         """
@@ -236,11 +236,11 @@ class HBNBCommand(cmd.Cmd):
         names = ["BaseModel", "User", "State", "City", "Amenity",
                  "Place", "Review"]
 
-        commands = {"all": self.do_x,
-                    "count": self.m_count,
-                    "show": self.d_shw,
-                    "destroy": self.d_dest,
-                    "update": self.d_updat}
+        commands = {"all": self.do_all,
+                    "count": self.my_count,
+                    "show": self.do_show,
+                    "destroy": self.do_destroy,
+                    "update": self.do_update}
 
         args = re.match(r"^(\w+)\.(\w+)\((.*)\)", line)
         if args:
