@@ -4,21 +4,23 @@
     width: 100%;
     border: 1px solid #DDDDDD;
     border-radius: 4px;
-    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
-.filters button {
+
+section.filters button{
     font-size: 18px;
+    color: white;
     background-color: #FF5A5F;
-    color: #FFFFFF;
     height: 48px;
-    width: 20%;
     border: 0px;
     border-radius: 4px;
-    align-content: center;
-    right: 30px;
-    top: 15%;
-    position: absolute;
+    width: 20%;
+    margin-right: 30px;
+    opacity: 1;
 }
-.filters button:hover {
-    opacity: 90%;
+
+section.filters button:hover {
+    opacity: 0.9;
 }

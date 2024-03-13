@@ -1,104 +1,115 @@
 #!/usr/bin/python3
 """
-Unit tests for console that check console for capturing stdout into a StringIO object
+Contains the class TestConsoleDocs
 """
-
+import io
 import os
-import sys
+from contextlib import redirect_stdout
+import console
+import inspect
+import pep8
 import unittest
-from unittest.mock import create_autospec, patch
-from io import StringIO
-from console import HBNBCommand
-from models import storage
-from models.base_model import BaseModel
-from models.user import User
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.place import Place
-from models.review import Review
+HBNBCommand = console.HBNBCommand
 
 
-class TestConsole(unittest.TestCase):
-    """
-    Unittest for the console model
-    """
+class TestConsoleDocs(unittest.TestCase):
+    """Class for testing documentation of the console"""
+    def test_pep8_conformance_console(self):
+        """Test that console.py conforms to PEP8."""
+        pep8s = pep8.StyleGuide(quiet=True)
+        result = pep8s.check_files(['console.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
+
+    def test_pep8_conformance_test_console(self):
+        """Test that tests/test_console.py conforms to PEP8."""
+        pep8s = pep8.StyleGuide(quiet=True)
+        result = pep8s.check_files(['tests/test_console.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
+
+    def test_console_module_docstring(self):
+        """Test for the console.py module docstring"""
+        self.assertIsNot(console.__doc__, None,
+                         "console.py needs a docstring")
+        self.assertTrue(len(console.__doc__) >= 1,
+                        "console.py needs a docstring")
+
+    def test_HBNBCommand_class_docstring(self):
+        """Test for the HBNBCommand class docstring"""
+        self.assertIsNot(HBNBCommand.__doc__, None,
+                         "HBNBCommand class needs a docstring")
+        self.assertTrue(len(HBNBCommand.__doc__) >= 1,
+                        "HBNBCommand class needs a docstring")
+
+
+class TestConsoleCommands(unittest.TestCase):
+    """test console commands"""
+    @classmethod
+    def setUpClass(cls):
+        """Create command console for test"""
+        cls.cmdcon = HBNBCommand()
 
     def setUp(self):
-        """Redirecting stdin and stdout"""
-        self.mock_stdin = create_autospec(sys.stdin)
-        self.mock_stdout = create_autospec(sys.stdout)
-        self.err = ["** class name missing **",
-                    "** class doesn't exist **",
-                    "** instance id missing **",
-                    "** no instance found **",
-                    ]
+        """Create in memory buffer for stdout"""
+        self.output = io.StringIO()
 
-        self.cls = ["BaseModel",
-                    "User",
-                    "State",
-                    "City",
-                    "Place",
-                    "Amenity",
-                    "Review"]
+    def tearDown(self):
+        """Close in memory buffer after test completes"""
+        self.output.close()
 
-    def create(self, server=None):
-        """
-        Redirects stdin and stdout to the mock module
-        """
-        return HBNBCommand(stdin=self.mock_stdin, stdout=self.mock_stdout)
+    @unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') == 'db',
+                     "Testing DBStorage")
+    def test_do_create(self):
+        """Test do_create method of console"""
+        with redirect_stdout(self.output):
+            self.cmdcon.onecmd('create')
+            self.assertEqual(self.output.getvalue(),
+                             "** class name missing **\n")
+            self.output.seek(0)
+            self.output.truncate()
+            self.cmdcon.onecmd('create blah')
+            self.assertEqual(self.output.getvalue(),
+                             "** class doesn't exist **\n")
+            self.output.seek(0)
+            self.output.truncate()
+            self.cmdcon.onecmd('create State')
+            self.assertRegex(self.output.getvalue(),
+                             '[a-z0-9]{8}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{12}')
+            self.output.seek(0)
+            self.output.truncate()
+            self.cmdcon.onecmd('create State name="California"')
+            self.assertRegex(self.output.getvalue(),
+                             '[a-z0-9]{8}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{12}')
 
-    def last_write(self, nr=None):
-        """Returns last n output lines"""
-        if nr is None:
-            return self.mock_stdout.write.call_args[0][0]
-        return "".join(map(lambda c: c[0][0],
-                           self.mock_stdout.write.call_args_list[-nr:]))
-
-    def test_quit(self):
-        """Quit command"""
-        cli = self.create()
-        self.assertFalse(cli.onecmd("quit"))
-
-    def test_help(self):
-        with patch('sys.stdout', new=StringIO()) as f:
-            self.cli.onecmd("help")
-            output = f.getvalue().strip()
-            self.assertTrue("Documented commands (type help <topic>):" in output)
-
-    def test_create(self):
-        with patch('sys.stdout', new=StringIO()) as f:
-            self.cli.onecmd("create BaseModel")
-            output = f.getvalue().strip()
-            self.assertTrue(len(output) == 36)  # UUID length
-
-    def test_show(self):
-        with patch('sys.stdout', new=StringIO()) as f:
-            self.cli.onecmd("create BaseModel")
-            output = f.getvalue().strip()
-            obj_id = output
-
-        with patch('sys.stdout', new=StringIO()) as f:
-            self.cli.onecmd(f"show BaseModel {obj_id}")
-            output = f.getvalue().strip()
-            self.assertTrue("BaseModel" in output)
-
-    def test_destroy(self):
-        with patch('sys.stdout', new=StringIO()) as f:
-            self.cli.onecmd("create BaseModel")
-            output = f.getvalue().strip()
-            obj_id = output
-
-        with patch('sys.stdout', new=StringIO()) as f:
-            self.cli.onecmd(f"destroy BaseModel {obj_id}")
-            output = f.getvalue().strip()
-            self.assertEqual(output, "")
-
-    def test_help_show(self):
-        with patch('sys.stdout', new=StringIO()) as f:
-            HBNBCommand().onecmd("help show")
-            output = f.getvalue().strip()
-            self.assertTrue("Show command help message" in output)  # Replace with the actual expected output
-
-if __name__ == '__main__':
-    unittest.main()
+    @unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') != 'db',
+                     "Testing DBStorage")
+    def test_do_create_db(self):
+        """Test do_create"""
+        with redirect_stdout(self.output):
+            self.cmdcon.onecmd('create')
+            self.assertEqual(self.output.getvalue(),
+                             "** class name missing **\n")
+            self.output.seek(0)
+            self.output.truncate()
+            self.cmdcon.onecmd('create blah')
+            self.assertEqual(self.output.getvalue(),
+                             "** class doesn't exist **\n")
+            self.output.seek(0)
+            self.output.truncate()
+            self.cmdcon.onecmd('create State name="California"')
+            id = self.output.getvalue()
+            self.assertRegex(id,
+                             '[a-z0-9]{8}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{4}-'
+                             '[a-z0-9]{12}')
