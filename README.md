@@ -57,3 +57,4 @@ The project will be developed in several steps, each focusing on a specific conc
 ## Conclusion
 
 The AirBnB Clone project is an opportunity to learn and implement key concepts in web development and programming. By following the steps outlined above, you will develop a solid understanding of how web applications are built and deployed.
+,,
